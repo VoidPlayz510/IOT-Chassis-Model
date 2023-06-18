@@ -24,13 +24,13 @@ const int Forward_IN = 14; // d5 = 14 // d6 = 12 d7 = 13
 const int Stopped_IN = 13;
 const int Obstacle_IN = 12;
 
-const char* ssid = "WIFI LORDS";
-const char* password = "CT93CKW38AFGPNJ";
-const char* mqtt_server = "10.1.1.213";
+const char* ssid = "xxxxxxxxx";
+const char* password = "xxxxxxxxx";
+const char* mqtt_server = "0.0.0.00";
 
 // mqtt login info
-const char* mqttPwd = "pi";
-const char* mqttUser = "rasppi";
+const char* mqttPwd = "xxxxxx";
+const char* mqttUser = "xxxxxxx";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
