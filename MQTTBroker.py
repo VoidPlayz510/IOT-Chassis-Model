@@ -4,22 +4,22 @@ from Adafruit_IO import Client, Feed
 from sense_hat import SenseHat
 import time
 
-broker = 'xxxxxxxxxxxxxxxxxxxx'
-port = 0
-topic = "xxxxxxxxxx"
+broker = 'xxxxxxxxxxx'
+port = 0000
+topic = "testTopic"
 
 # Generate client ID with pub prefix randomly
 client_id = f'python-mqtt-{random.randint(0, 100)}'
-username = 'xxxxxxxxxxx'
-password = 'xxxxxxxxxxx'
+username = 'xxxxxxxxx'
+password = 'xxxxxxxxx'
 
-ADAFRUIT_IO_KEY = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-ADAFRUIT_IO_USERNAME = 'xxxxxxxxxxxxxxxxxxxxxxx'
+ADAFRUIT_IO_KEY = 'xxxxxxxxxxxxxxxxxxxxxxxx'
+ADAFRUIT_IO_USERNAME = 'xxxxxxxxxxxxxxx'
 
 aio = Client(ADAFRUIT_IO_USERNAME, ADAFRUIT_IO_KEY)
 
 # Create a new feed named 'counter'
-name = 'xxxxxxxxxxxxxxx'
+name = 'Jesus'
 feed = Feed(name=name)
 
 feedsList = []
@@ -54,13 +54,8 @@ def subscribe(client: mqtt_client):
         msg.payload = msg.payload.decode("utf-8")
 
         if msg.payload == "connected":
-            global count, time_time_pause, data_count, data_limit
+            global count, time_time_pause
             count = count + 1
-
-            # Check if the data count has reached the limit
-            if data_count >= data_limit:
-                print("Data limit reached. Waiting until reset.")
-                return  # Stop processing further
 
             aio.send_data('jesus', count)
             time.sleep(3)
@@ -83,6 +78,7 @@ def subscribe(client: mqtt_client):
             print("obstacle detected.")
             aio.send_data('jesus', "we detected something!")
 
+        time.sleep(time_time_pause)
     client.subscribe(topic)
     client.on_message = on_message
 
