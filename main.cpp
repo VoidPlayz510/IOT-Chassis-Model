@@ -4,37 +4,44 @@ Servo servo;
 
 int angle = 50;
 
-// Motor Pins
-#define Front_EN_A   5  // Enable pin for first motor
-#define Front_IN1    6  // Control pin for first motor
-#define Front_IN2    7  // Control pin for first motor
-#define Front_IN3    8  // Control pin for second motor
-#define Front_IN4    9  // Control pin for second motor
-#define Front_EN_B   10 // Enable pin for second motor
+//Motor Pins
+#define Front_EN_A 5   //Enable pin for first motor
+#define Front_IN1 6    //control pin for first motor
+#define Front_IN2 7    //control pin for first motor
+#define Front_IN3 8    //control pin for second motor
+#define Front_IN4 9    //control pin for second motor
+#define Front_EN_B 10  //Enable pin for second motor
 
-#define Back_EN_A    3  // Enable pin for first motor
-#define Back_IN1     2  // Control pin for first motor
-#define Back_IN2     4  // Control pin for first motor
-#define Back_IN3     12 // Control pin for second motor
-#define Back_IN4     13 // Control pin for second motor
-#define Back_EN_B    11 // Enable pin for second motor
+#define Back_EN_A 3   //Enable pin for first motor
+#define Back_IN1 2    //control pin for first motor
+#define Back_IN2 4    //control pin for first motor
+#define Back_IN3 12   //control pin for second motor
+#define Back_IN4 13   //control pin for second motor
+#define Back_EN_B 11  //Enable pin for second motor
 
-#define trigPin A1 // Trigger pin of the ultrasonic sensor
-#define echoPin A0 // Echo pin of the ultrasonic sensor
+#define echoPin A0  // Echo pin of the ultrasonic sensor
+#define trigPin A1  // Trigger pin of the ultrasonic sensor
 
-// Initializing variables to store data
+#define Forward A3  //
+#define Obs A4      //
+#define Stop A5     //
+
+//Initializing variables to store data
 int motor_speed_FL = 0;
+
 int motor_speed_FR = 0;
 int motor_speed_BL = 0;
 int motor_speed_BR = 0;
 
 long duration, distance;
+unsigned int detectionLim = 7000;
 unsigned long currentTime, elapsedTime, previousTime;
 const unsigned long delayTime = 1000;
+float starttime = millis();
+float endtime = starttime;
 
-void setup()
-{
-  Serial.begin(9600); // Initialize the Serial communication
+void setup() {
+  Serial.begin(9600);  // Initialize the Serial communication
 
   servo.attach(A2);
   servo.write(angle);
@@ -56,44 +63,49 @@ void setup()
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
 
+  pinMode(Forward, OUTPUT);
+  pinMode(Obs, OUTPUT);
+  pinMode(Stop, OUTPUT);
+
+  digitalWrite(Forward, LOW);
+  digitalWrite(Obs, LOW);
+  digitalWrite(Stop, LOW);
+
   digitalWrite(Front_IN1, HIGH);
   digitalWrite(Front_IN2, LOW);
-  analogWrite(Front_EN_A, motor_speed_FL);
-
   digitalWrite(Front_IN3, HIGH);
   digitalWrite(Front_IN4, LOW);
-  analogWrite(Front_EN_B, motor_speed_FR);
-
   digitalWrite(Back_IN1, HIGH);
   digitalWrite(Back_IN2, LOW);
-  analogWrite(Back_EN_A, motor_speed_BL);
-
   digitalWrite(Back_IN3, HIGH);
   digitalWrite(Back_IN4, LOW);
+
+  analogWrite(Front_EN_A, motor_speed_FL);
+  analogWrite(Front_EN_B, motor_speed_FR);
+  analogWrite(Back_EN_A, motor_speed_BL);
   analogWrite(Back_EN_B, motor_speed_BR);
+
+  delay(500);
 
   analogWrite(Front_EN_A, 255);
   analogWrite(Front_EN_B, 255);
   analogWrite(Back_EN_A, 255);
   analogWrite(Back_EN_B, 255);
-
   delay(5000);
-
-  analogWrite(Front_EN_A, 200);
-  analogWrite(Front_EN_B, 200);
-  analogWrite(Back_EN_A, 200);
-  analogWrite(Back_EN_B, 200);
 }
 
-void loop()
-{
+void loop() {
   currentTime = millis();
 
+
   // Check if the desired delay has passed
-  if (currentTime - previousTime >= delayTime)
-  {
+  if (currentTime - previousTime >= delayTime) {
     // Display the elapsed time in seconds
-    elapsedTime = (currentTime - previousTime) / 300;
+    elapsedTime = (currentTime - previousTime) / 1000;
+
+        if (elapsedTime >= 7) {
+      // Stop the program
+    }
     // Send a trigger pulse to the ultrasonic sensor
     digitalWrite(trigPin, LOW);
     delayMicroseconds(2);
@@ -105,78 +117,117 @@ void loop()
     duration = pulseIn(echoPin, HIGH);
 
     // Calculate the distance in centimeters
-    distance = (duration * 0.034) / 2;
+    distance = duration * 0.034 / 2;
 
     // Print the distance to the Serial monitor
     //Serial.print("Distance: ");
     //Serial.print(distance);
     //Serial.println(" cm");
 
-    Speed(120);
-    if (distance <= 15)
-    {
-      Reverse();
-      delay(3000);
-      Steering();
-      MoveForward();
-    }
-    else if (distance >= 16 && distance <= 25)
-    {
-      Speed(90);
-    }
-    else if (distance >= 26 && distance <= 30)
-    {
-      Speed(130);
-    }
-    else
-    {
-      Speed(150);
-    }
+    if (distance <= 15) {
+      digitalWrite(Forward, LOW);
+      digitalWrite(Obs, HIGH);
 
-    Serial.println(distance);
+      analogWrite(Front_EN_A, 0);
+      analogWrite(Front_EN_B, 0);
+      analogWrite(Back_EN_A, 0);
+      analogWrite(Back_EN_B, 0);
+      delay(500);
+      digitalWrite(Front_IN1, LOW);
+      digitalWrite(Front_IN2, HIGH);
+      digitalWrite(Front_IN3, LOW);
+      digitalWrite(Front_IN4, HIGH);
+      digitalWrite(Back_IN1, LOW);
+      digitalWrite(Back_IN2, HIGH);
+      digitalWrite(Back_IN3, LOW);
+      digitalWrite(Back_IN4, HIGH);
 
+      analogWrite(Front_EN_A, 200);
+      analogWrite(Front_EN_B, 200);
+      analogWrite(Back_EN_A, 200);
+      analogWrite(Back_EN_B, 200);
+
+
+      //digitalWrite(Reverse, HIGH);
+      delay(1000);
+      //digitalWrite(Reverse, LOW);
+
+
+      analogWrite(Front_EN_A, 0);
+      analogWrite(Front_EN_B, 0);
+      analogWrite(Back_EN_A, 0);
+      analogWrite(Back_EN_B, 0);
+
+      delay(500);
+
+      digitalWrite(Front_IN1, HIGH);
+      digitalWrite(Front_IN2, LOW);
+      digitalWrite(Front_IN3, HIGH);
+      digitalWrite(Front_IN4, LOW);
+      digitalWrite(Back_IN1, HIGH);
+      digitalWrite(Back_IN2, LOW);
+      digitalWrite(Back_IN3, HIGH);
+      digitalWrite(Back_IN4, LOW);
+
+      analogWrite(Front_EN_A, 255);
+      analogWrite(Front_EN_B, 255);
+      analogWrite(Back_EN_A, 255);
+      analogWrite(Back_EN_B, 255);
+
+      servo.write(30);
+      delay(1500);
+      servo.write(70);
+      delay(1750);
+      servo.write(30);
+      delay(1500);
+      servo.write(50);
+
+      digitalWrite(Obs, LOW);
+    }
+    if (distance >= 16 && distance <= 25) {
+      analogWrite(Front_EN_A, 90);
+      analogWrite(Front_EN_B, 90);
+      analogWrite(Back_EN_A, 90);
+      analogWrite(Back_EN_B, 90);
+
+      digitalWrite(Forward, HIGH);
+    }
+    if (distance >= 26 && distance <= 30) {
+      analogWrite(Front_EN_A, 130);
+      analogWrite(Front_EN_B, 130);
+      analogWrite(Back_EN_A, 130);
+      analogWrite(Back_EN_B, 130);
+
+      digitalWrite(Forward, HIGH);
+    }
+    if (distance > 31) {
+      analogWrite(Front_EN_A, 255);
+      analogWrite(Front_EN_B, 255);
+      analogWrite(Back_EN_A, 255);
+      analogWrite(Back_EN_B, 255);
+
+      digitalWrite(Forward, HIGH);
+    }
     previousTime = currentTime;
+    Serial.println(distance);
   }
 }
 
-void Speed(int speed)
-{
-  analogWrite(Front_EN_A, speed);
-  analogWrite(Front_EN_B, speed);
-  analogWrite(Back_EN_A, speed);
-  analogWrite(Back_EN_B, speed);
-}
-
-void Reverse()
-{
-  digitalWrite(Front_IN1, LOW);
-  digitalWrite(Front_IN2, HIGH);
-  digitalWrite(Front_IN3, LOW);
-  digitalWrite(Front_IN4, HIGH);
-  digitalWrite(Back_IN1, LOW);
-  digitalWrite(Back_IN2, HIGH);
-  digitalWrite(Back_IN3, LOW);
-  digitalWrite(Back_IN4, HIGH);
-}
-
-void MoveForward()
-{
-  digitalWrite(Front_IN1, HIGH);
-  digitalWrite(Front_IN2, LOW);
-  digitalWrite(Front_IN3, HIGH);
-  digitalWrite(Front_IN4, LOW);
-  digitalWrite(Back_IN1, HIGH);
-  digitalWrite(Back_IN2, LOW);
-  digitalWrite(Back_IN3, HIGH);
-  digitalWrite(Back_IN4, LOW);
-}
-
-void Steering()
-{
-  angle = 30;
-  servo.write(angle);
-  MoveForward();
-  Speed(100);
-  delay(2000);
-  angle = 50;
+void steering() {
+  // scan from 0 to 180 degrees
+  for (angle = 30; angle < 70; angle++) {
+    Serial.print("angle: ");
+    Serial.println(angle);
+    servo.write(angle);
+    delay(15);
+  }
+  // now scan back from 180 to 0 degrees
+  delay(1000);
+  for (angle = 70; angle > 30; angle--) {
+    Serial.print("angle: ");
+    Serial.println(angle);
+    servo.write(angle);
+    delay(15);
+  }
+  delay(1000);
 }
