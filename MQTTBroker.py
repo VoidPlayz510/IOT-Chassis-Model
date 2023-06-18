@@ -5,16 +5,16 @@ from sense_hat import SenseHat
 import time
 
 broker = 'xxxxxxxxxxx'
-port = 0000
+port = 1883
 topic = "testTopic"
 
 # Generate client ID with pub prefix randomly
 client_id = f'python-mqtt-{random.randint(0, 100)}'
-username = 'xxxxxxxxx'
-password = 'xxxxxxxxx'
+username = 'xxxxxxxx'
+password = 'xxxxxxx'
 
-ADAFRUIT_IO_KEY = 'xxxxxxxxxxxxxxxxxxxxxxxx'
-ADAFRUIT_IO_USERNAME = 'xxxxxxxxxxxxxxx'
+ADAFRUIT_IO_KEY = 'xxxxxxxxxxxxx'
+ADAFRUIT_IO_USERNAME = 'xxxxxxxxxxxx'
 
 aio = Client(ADAFRUIT_IO_USERNAME, ADAFRUIT_IO_KEY)
 
@@ -28,7 +28,7 @@ points_over_minutes = 30 / 60
 
 time_time_pause = (len(feedsList) / points_over_minutes)
 count = 0
-
+state = "Idle"
 data_limit = 100  # Specify the data limit
 data_count = 0  # Initialize the data count
 
@@ -52,9 +52,10 @@ def connect_mqtt() -> mqtt_client:
 def subscribe(client: mqtt_client):
     def on_message(client, userdata, msg):
         msg.payload = msg.payload.decode("utf-8")
+        ChangeColours()
 
         if msg.payload == "connected":
-            global count, time_time_pause
+            global count, time_time_pause, state
             count = count + 1
 
             aio.send_data('jesus', count)
@@ -67,14 +68,17 @@ def subscribe(client: mqtt_client):
             print("Received by Paho!")
 
         if msg.payload == "forward":
+            state = "Forward"
             print("moving forwards.")
             aio.send_data('jesus', "We are moving forwards.")
 
         if msg.payload == "stopping":
+            state = "Stop"
             print("stopping.")
             aio.send_data('jesus', "We are stopping.")
 
         if msg.payload == "obstacle":
+            state = "Obstacle"
             print("obstacle detected.")
             aio.send_data('jesus', "we detected something!")
 
@@ -112,6 +116,26 @@ def EnvironSensors():
         print("Data limit reached. Waiting until reset.")
         data_count = 0  # Reset the data count
 
+def ChangeColours():
+    sense = SenseHat()
+    global state
+
+    if state == "Idle":
+        blue = (0, 0, 255)
+        pixels = [blue] * 64
+        sense.set_pixels(pixels)
+    if state == "Forward":
+        green = (0, 255, 0)
+        pixels = [green] * 64
+        sense.set_pixels(pixels)
+    if state == "Obstacle":
+        red = (255, 0, 0)
+        pixels = [red] * 64
+        sense.set_pixels(pixels)
+    if state == "Stop":
+        white = (255, 255, 255)
+        pixels = [white] * 64
+        sense.set_pixels(pixels)
 
 def run():
     client = connect_mqtt()
