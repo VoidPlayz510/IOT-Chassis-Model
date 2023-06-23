@@ -4,17 +4,17 @@ from Adafruit_IO import Client, Feed
 from sense_hat import SenseHat
 import time
 
-broker = '0.0.0.0'
-port = 0000
+broker = '0'
+port = 1883
 topic = "testTopic"
 
 # Generate client ID with pub prefix randomly
 client_id = f'python-mqtt-{random.randint(0, 100)}'
-username = 'xxxxxxxxxxxx'
-password = 'xxxx'
+username = 'x'
+password = 'x'
 
-ADAFRUIT_IO_KEY = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-ADAFRUIT_IO_USERNAME = 'xxxxxxxxxxxx'
+ADAFRUIT_IO_KEY = 'x'
+ADAFRUIT_IO_USERNAME = 'x'
 
 aio = Client(ADAFRUIT_IO_USERNAME, ADAFRUIT_IO_KEY)
 
@@ -31,12 +31,11 @@ feedsList.append(feed)
 feedsList.append(FeedB)
 points_over_minutes = 30 / 60
 
-time_time_pause = (len(feedsList) / points_over_minutes) / 1.4
+time_time_pause = (len(feedsList) / points_over_minutes) / 2.0
 count = 0
 state = "Idle"
 data_limit = 100  # Specify the data limit
 data_count = 0  # Initialize the data count
-
 
 def connect_mqtt() -> mqtt_client:
     def on_connect(client, userdata, flags, rc):
@@ -53,48 +52,42 @@ def connect_mqtt() -> mqtt_client:
     client.connect(broker, port)
     return client
 
-
 def subscribe(client: mqtt_client):
     def on_message(client, userdata, msg):
         msg.payload = msg.payload.decode("utf-8")
         ChangeColours()
 
+        if msg.payload == "connected":
+            global count, time_time_pause, state
+            count = count + 1
 
-        try:               
-            if msg.payload == "connected":
-                global count, time_time_pause, state
-                count = count + 1
+            aio.send_data('jesus', count)
+            time.sleep(3)
 
-                aio.send_data('jesus', count)
-                time.sleep(3)
-
-                EnvironSensors()
-                time.sleep(time_time_pause)
-
-            if msg.payload == "Hello World!":
-                print("Received by Paho!")
-
-            if msg.payload == "forward":
-                state = "Forward"
-                print("moving forwards.")
-                aio.send_data('jesus', "1")
-                aio.send_data('jesus2', "1")
-
-            if msg.payload == "stopping":
-                state = "Stop"
-                print("stopping.")
-                aio.send_data('jesus2', "0")
-
-            if msg.payload == "obstacle":
-                state = "Obstacle"
-                print("obstacle detected.")
-                aio.send_data('jesus', "obstacle")
-        except:
+            EnvironSensors()
             time.sleep(time_time_pause)
 
+        if msg.payload == "Hello World!":
+            print("Received by Paho!")
+
+        if msg.payload == "forward":
+            state = "Forward"
+            print("moving forwards.")
+            aio.send_data('jesus', "1")
+
+        # if msg.payload == "stopping":
+        #     state = "Stop"
+        #     print("stopping.")
+        #     aio.send_data('jesus', "0")
+
+        if msg.payload == "obstacle":
+            state = "Obstacle"
+            print("obstacle detected.")
+            aio.send_data('jesus', "0")
+
+        time.sleep(time_time_pause)
     client.subscribe(topic)
     client.on_message = on_message
-
 
 def EnvironSensors():
     sense = SenseHat()
