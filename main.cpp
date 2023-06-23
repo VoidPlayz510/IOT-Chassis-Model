@@ -46,6 +46,7 @@ void setup() {
   servo.attach(A2);
   servo.write(angle);
 
+  pinMode(A6, INPUT);
   pinMode(Front_EN_A, OUTPUT);
   pinMode(Front_IN1, OUTPUT);
   pinMode(Front_IN2, OUTPUT);
@@ -94,18 +95,26 @@ void setup() {
   delay(5000);
 }
 
-void loop() {
+void loop() 
+{
+  int sensorValue = analogRead(A6);
+  Serial.println(sensorValue);
+
+  while(sensorValue < 1000)
+  {
+    sensorValue = analogRead(A6);
+
+    analogWrite(Front_EN_A, 0);
+    analogWrite(Front_EN_B, 0);
+    analogWrite(Back_EN_A, 0);
+    analogWrite(Back_EN_B, 0);
+  }
+  
+
   currentTime = millis();
 
 
   // Check if the desired delay has passed
-  if (currentTime - previousTime >= delayTime) {
-    // Display the elapsed time in seconds
-    elapsedTime = (currentTime - previousTime) / 1000;
-
-        if (elapsedTime >= 7) {
-      // Stop the program
-    }
     // Send a trigger pulse to the ultrasonic sensor
     digitalWrite(trigPin, LOW);
     delayMicroseconds(2);
@@ -210,7 +219,6 @@ void loop() {
     }
     previousTime = currentTime;
     Serial.println(distance);
-  }
 }
 
 void steering() {
